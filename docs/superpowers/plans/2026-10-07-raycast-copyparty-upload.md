@@ -39,6 +39,7 @@
 - [ ] Read the clipboard once when the command opens. For `file`, show a Form with the basename as its editable initial filename and display the raw `Clipboard.read()` fields for debugging. Otherwise, display the returned field values (`file`, `text`, and `html`) so the user can inspect exactly what Raycast exposes; do not display credentials.
 - [ ] Add required upload URL, username, and secure password preferences; default the URL to `https://f.chuu.moe/files/` and username to `adm`.
 - [ ] On submit, read the source file bytes, PUT to `uploadUrl + encodeURIComponent(filename)`, use HTTP Basic authentication, show a clear failure on HTTP/network errors, and copy the final valid HTTP(S) URL from Copyparty's successful response. Preserve leading/trailing spaces in valid filenames; reject only empty/whitespace-only names and path/control characters.
+- [ ] Prevent concurrent submissions from issuing duplicate PUT requests while an upload is in progress.
 - [ ] Document import/setup, preference configuration, that clipboard values are shown in the command while debugging, and that screenshot bitmap uploads remain unsupported until diagnostics show Raycast exposes them as a file.
 - [ ] Run the Raycast distribution build (`npm run build`) and inspect the final diff; do not run a test suite.
 - [ ] Commit the completed extension.

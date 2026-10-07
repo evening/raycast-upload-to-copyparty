@@ -30,6 +30,7 @@ type ViewState =
 
 export default function Command() {
   const didReadClipboard = useRef(false);
+  const uploadInProgress = useRef(false);
   const [view, setView] = useState<ViewState>({ kind: "loading" });
   const [isUploading, setIsUploading] = useState(false);
 
@@ -68,6 +69,8 @@ export default function Command() {
   }, []);
 
   async function upload(filePath: string, values: { filename: string }) {
+    if (uploadInProgress.current) return;
+
     const filename = values.filename;
     if (!filename.trim() || filename === "." || filename === ".." || /[\\/\x00-\x1f\x7f]/.test(filename)) {
       await showToast({ style: Toast.Style.Failure, title: "Enter a valid file name" });
@@ -86,41 +89,45 @@ export default function Command() {
       return;
     }
 
+    uploadInProgress.current = true;
     setIsUploading(true);
-    const toast = await showToast({ style: Toast.Style.Animated, title: "Uploading file" });
     try {
-      const bytes = await readFile(filePath);
-      const authorization = Buffer.from(`${preferences.username}:${preferences.password}`, "utf8").toString("base64");
-      const response = await fetch(destination, {
-        method: "PUT",
-        headers: { Authorization: `Basic ${authorization}`, "Content-Type": "application/octet-stream" },
-        body: bytes,
-        redirect: "error",
-      });
+      const toast = await showToast({ style: Toast.Style.Animated, title: "Uploading file" });
+      try {
+        const bytes = await readFile(filePath);
+        const authorization = Buffer.from(`${preferences.username}:${preferences.password}`, "utf8").toString("base64");
+        const response = await fetch(destination, {
+          method: "PUT",
+          headers: { Authorization: `Basic ${authorization}`, "Content-Type": "application/octet-stream" },
+          body: bytes,
+          redirect: "error",
+        });
 
-      if (!response.ok) {
+        if (!response.ok) {
+          toast.style = Toast.Style.Failure;
+          toast.title = `Upload failed (HTTP ${response.status})`;
+          return;
+        }
+
+        const responseBody = await response.text();
+        const result = findFinalHttpUrl(responseBody);
+        if (!result) {
+          toast.style = Toast.Style.Failure;
+          toast.title = "Upload completed, but no share URL was returned";
+          return;
+        }
+
+        await Clipboard.copy(result);
+        toast.style = Toast.Style.Success;
+        toast.title = "Copyparty link copied";
+        setView({ kind: "complete" });
+      } catch {
         toast.style = Toast.Style.Failure;
-        toast.title = `Upload failed (HTTP ${response.status})`;
-        return;
+        toast.title = "Upload failed";
+        toast.message = "Check the file, network, and Copyparty settings.";
       }
-
-      const responseBody = await response.text();
-      const result = findFinalHttpUrl(responseBody);
-      if (!result) {
-        toast.style = Toast.Style.Failure;
-        toast.title = "Upload completed, but no share URL was returned";
-        return;
-      }
-
-      await Clipboard.copy(result);
-      toast.style = Toast.Style.Success;
-      toast.title = "Copyparty link copied";
-      setView({ kind: "complete" });
-    } catch {
-      toast.style = Toast.Style.Failure;
-      toast.title = "Upload failed";
-      toast.message = "Check the file, network, and Copyparty settings.";
     } finally {
+      uploadInProgress.current = false;
       setIsUploading(false);
     }
   }
