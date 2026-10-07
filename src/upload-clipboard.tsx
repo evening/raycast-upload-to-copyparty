@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Clipboard, Detail, Form, Toast, getPreferenceValues, showToast } from "@raycast/api";
+import { Action, ActionPanel, Clipboard, Detail, Form, Toast, getPreferenceValues, popToRoot, showToast } from "@raycast/api";
 import { readFile, stat } from "node:fs/promises";
 import { basename } from "node:path";
 import { useEffect, useRef, useState } from "react";
@@ -18,15 +18,13 @@ type ClipboardFields = {
 type Inspection = {
   fields: ClipboardFields;
   fileName?: string;
-  fileSize?: number;
   uploadableFile?: string;
 };
 
 type ViewState =
   | { kind: "loading" }
   | { kind: "error"; message: string }
-  | { kind: "inspection"; inspection: Inspection }
-  | { kind: "complete" };
+  | { kind: "inspection"; inspection: Inspection };
 
 export default function Command() {
   const didReadClipboard = useRef(false);
@@ -53,7 +51,6 @@ export default function Command() {
           try {
             const info = await stat(fields.file);
             if (info.isFile()) {
-              inspection.fileSize = info.size;
               inspection.uploadableFile = fields.file;
             }
           } catch {
@@ -120,7 +117,7 @@ export default function Command() {
         await Clipboard.copy(result);
         toast.style = Toast.Style.Success;
         toast.title = "Copyparty link copied";
-        setView({ kind: "complete" });
+        await popToRoot({ clearSearchBar: true });
       } catch {
         toast.style = Toast.Style.Failure;
         toast.title = "Upload failed";
@@ -134,9 +131,8 @@ export default function Command() {
 
   if (view.kind === "loading") return <Detail isLoading markdown="Reading clipboard…" />;
   if (view.kind === "error") return <Detail markdown={view.message} />;
-  if (view.kind === "complete") return <Detail markdown="## Upload complete\n\nThe Copyparty link is on your clipboard." />;
 
-  const { fields, fileName, fileSize, uploadableFile } = view.inspection;
+  const { fields, fileName, uploadableFile } = view.inspection;
   if (uploadableFile && fileName) {
     return (
       <Form
@@ -147,11 +143,7 @@ export default function Command() {
           </ActionPanel>
         }
       >
-        <Form.Description title="Source" text={`Copied file: ${fileName}${fileSize === undefined ? "" : ` (${fileSize} bytes)`}`} />
         <Form.TextField id="filename" title="Upload as" defaultValue={fileName} />
-        <Form.Description title="Clipboard file" text={debugValue(fields.file)} />
-        <Form.Description title="Clipboard text" text={debugValue(fields.text)} />
-        <Form.Description title="Clipboard HTML" text={debugValue(fields.html)} />
       </Form>
     );
   }
