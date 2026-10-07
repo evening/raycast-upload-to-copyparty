@@ -13,6 +13,6 @@ This private Raycast command uploads one file copied to the clipboard and copies
 
 Copy a single local file in Finder, then run **Upload Clipboard to Copyparty**. Review or edit the prefilled filename and submit. On success, the command copies the HTTP(S) URL returned by Copyparty to the clipboard. The destination filename is URL encoded before the HTTPS PUT request.
 
-The command reads `Clipboard.read()` once on opening. It supports a `file` value that points to a readable local file. When there is no usable file, the diagnostic view reports whether Raycast returned `file`, `text`, or `html`, with character counts and safe file metadata. It does not display clipboard text, HTML, or full file paths.
+The command reads `Clipboard.read()` once on opening. It supports a `file` value that points to a readable local file. During debugging, both the upload form and the diagnostic view show the actual `file`, `text`, and `html` values Raycast returned. Values use JSON string notation so newlines and other special characters remain visible. This can expose clipboard text, HTML, and full file paths on screen; close the command when you are done inspecting them. Credentials are never displayed.
 
 Clipboard screenshot bitmap uploads are currently unsupported. A CleanShot screenshot can be uploaded only if Raycast exposes it as a local file path in `Clipboard.read()`; the diagnostic view shows whether that happened.

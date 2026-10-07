@@ -68,8 +68,8 @@ export default function Command() {
   }, []);
 
   async function upload(filePath: string, values: { filename: string }) {
-    const filename = values.filename.trim();
-    if (!filename || filename === "." || filename === ".." || /[\\/\x00-\x1f\x7f]/.test(filename)) {
+    const filename = values.filename;
+    if (!filename.trim() || filename === "." || filename === ".." || /[\\/\x00-\x1f\x7f]/.test(filename)) {
       await showToast({ style: Toast.Style.Failure, title: "Enter a valid file name" });
       return;
     }
@@ -105,11 +105,7 @@ export default function Command() {
       }
 
       const responseBody = await response.text();
-      const result = responseBody
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter((line) => /^https?:\/\/\S+$/.test(line))
-        .at(-1);
+      const result = findFinalHttpUrl(responseBody);
       if (!result) {
         toast.style = Toast.Style.Failure;
         toast.title = "Upload completed, but no share URL was returned";
@@ -146,24 +142,38 @@ export default function Command() {
       >
         <Form.Description title="Source" text={`Copied file: ${fileName}${fileSize === undefined ? "" : ` (${fileSize} bytes)`}`} />
         <Form.TextField id="filename" title="Upload as" defaultValue={fileName} />
+        <Form.Description title="Clipboard file" text={debugValue(fields.file)} />
+        <Form.Description title="Clipboard text" text={debugValue(fields.text)} />
+        <Form.Description title="Clipboard HTML" text={debugValue(fields.html)} />
       </Form>
     );
   }
 
-  const metadata = [
-    `- File: ${fields.file ? "present" : "absent"}`,
-    ...(fields.file ? [`- File name: ${escapeMarkdown(fileName ?? "unavailable")}`, `- File size: ${fileSize === undefined ? "unavailable" : `${fileSize} bytes`}`] : []),
-    `- Text: ${fields.text === undefined ? "absent" : `present (${fields.text.length} characters)`}`,
-    `- HTML: ${fields.html === undefined ? "absent" : `present (${fields.html.length} characters)`}`,
-  ].join("\n");
+  const debugFields = `    file: ${debugValue(fields.file)}\n    text: ${debugValue(fields.text)}\n    html: ${debugValue(fields.html)}`;
 
   return (
     <Detail
-      markdown={`## Clipboard inspection\n\n${metadata}\n\nNo readable local file was found. Copy a file in Finder and run this command again. Screenshot bitmaps are not supported unless Raycast exposes them as a file path.`}
+      markdown={`## Clipboard.read() values\n\n${debugFields}\n\nNo readable local file was found. Copy a file in Finder and run this command again. Screenshot bitmaps are not supported unless Raycast exposes them as a file path.`}
     />
   );
 }
 
-function escapeMarkdown(value: string): string {
-  return value.replace(/[\\`*_{}\[\]()#+.!|>-]/g, "\\$&");
+function debugValue(value: string | undefined): string {
+  return value === undefined ? "undefined" : JSON.stringify(value);
+}
+
+function findFinalHttpUrl(body: string): string | undefined {
+  let finalUrl: string | undefined;
+  for (const line of body.split(/\r?\n/)) {
+    const candidate = line.trim();
+    try {
+      const parsed = new URL(candidate);
+      if ((parsed.protocol === "http:" || parsed.protocol === "https:") && parsed.hostname) {
+        finalUrl = parsed.toString();
+      }
+    } catch {
+      // Other response lines are not share URLs.
+    }
+  }
+  return finalUrl;
 }
