@@ -108,7 +108,11 @@ export default function Command() {
         const authorization = Buffer.from(`${reqUser}:${preferences.password}`, "utf8").toString("base64");
         const response = await fetch(destination, {
           method: "PUT",
-          headers: { Authorization: `Basic ${authorization}`, "Content-Type": "application/octet-stream" },
+          headers: {
+            Authorization: `Basic ${authorization}`,
+            "Content-Type": "application/octet-stream",
+            Accept: "url",
+          },
           body: bytes,
           redirect: "error",
         });
@@ -120,7 +124,16 @@ export default function Command() {
         }
 
         const responseBody = await response.text();
-        const result = findFinalHttpUrl(responseBody);
+        let result: string | undefined;
+        try {
+          const parsed = new URL(responseBody.trim());
+          if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+            result = parsed.toString();
+          }
+        } catch {
+          // not a single valid URL
+        }
+        if (!result) result = findFinalHttpUrl(responseBody);
         if (!result) {
           toast.style = Toast.Style.Failure;
           toast.title = "Upload completed, but no share URL was returned";
