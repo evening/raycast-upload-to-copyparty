@@ -1,0 +1,74 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "upload-to-copyparty",
+  "title": "Upload to Copyparty",
+  "description": "Upload clipboard files or text to Copyparty",
+  "icon": "icon.png",
+  "author": "evening",
+  "platforms": [
+    "macOS"
+  ],
+  "categories": [
+    "Productivity",
+    "Developer Tools"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "upload-clipboard",
+      "title": "Upload Clipboard to Copyparty",
+      "description": "Upload the copied file or text and copy its share link",
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "uploadUrl",
+      "title": "Upload URL",
+      "description": "Copyparty folder URL (https:// or http://)",
+      "type": "textfield",
+      "required": true,
+      "placeholder": "https://copyparty.example.com/uploads/"
+    },
+    {
+      "name": "username",
+      "title": "Username",
+      "description": "Only needed if the server runs with --usernames",
+      "type": "textfield",
+      "required": false
+    },
+    {
+      "name": "password",
+      "title": "Password",
+      "description": "Copyparty password",
+      "type": "password",
+      "required": true
+    }
+  ],
+  "scripts": {
+    "dev": "ray develop",
+    "build": "ray build",
+    "lint": "ray lint",
+    "test": "node --import tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@raycast/api": "^2.7.1",
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.2.0",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.0",
+    "eslint": "^10.5.0",
+    "prettier": "^3.8.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [
+    "copyparty",
+    "upload",
+    "clipboard",
+    "share",
+    "file"
+  ]
+}
