@@ -105,19 +105,38 @@ export default function Command() {
     try {
       const toast = await showToast({ style: Toast.Style.Animated, title: `Uploading ${filename}...` });
       try {
-        const bytes = source.kind === "file" ? await readFile(source.path) : Buffer.from(source.content, "utf8");
+        let bodyStreamOrBuffer: any;
+        let contentLength: number;
+        if (source.kind === "file") {
+          const fileStat = await stat(source.path);
+          contentLength = fileStat.size;
+          bodyStreamOrBuffer = Readable.toWeb(createReadStream(source.path));
+        } else {
+          const buf = Buffer.from(source.content, "utf8");
+          contentLength = buf.length;
+          bodyStreamOrBuffer = buf;
+        }
+
         const reqUser = preferences.username || "x";
         const authorization = Buffer.from(`${reqUser}:${preferences.password}`, "utf8").toString("base64");
-        const response = await fetch(destination, {
+
+        const fetchOptions: RequestInit = {
           method: "PUT",
           headers: {
             Authorization: `Basic ${authorization}`,
             "Content-Type": "application/octet-stream",
             Accept: "url",
+            "Content-Length": contentLength.toString(),
           },
-          body: bytes,
+          body: bodyStreamOrBuffer,
           redirect: "error",
-        });
+        };
+
+        if (source.kind === "file") {
+          (fetchOptions as any).duplex = "half";
+        }
+
+        const response = await fetch(destination, fetchOptions);
 
         if (!response.ok) {
           toast.style = Toast.Style.Failure;
