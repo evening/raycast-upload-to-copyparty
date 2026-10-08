@@ -30,7 +30,7 @@ test("buildDestination", () => {
     "https://example.com/up/a%23b%3Fc.txt",
   );
 
-  assert.throws(() => buildDestination("http://example.com", "file.txt"), /must be https/);
+  assert.equal(buildDestination("http://example.com", "file.txt").toString(), "http://example.com/file.txt");
   assert.throws(() => buildDestination("https://example.com?query=1", "file.txt"), /query or hash/);
   assert.throws(() => buildDestination("https://example.com#hash", "file.txt"), /query or hash/);
 });

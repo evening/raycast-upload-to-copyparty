@@ -12,7 +12,7 @@ export function validateFilename(filename: string): string | undefined {
 
 export function buildDestination(baseUrl: string, filename: string): URL {
   const base = new URL(baseUrl);
-  if (base.protocol !== "https:") throw new Error("Invalid URL: must be https");
+  if (base.protocol !== "https:" && base.protocol !== "http:") throw new Error("Invalid URL: must be http or https");
   if (base.search || base.hash) throw new Error("Invalid URL: must not contain query or hash");
   const folder = base.toString().endsWith("/") ? base.toString() : `${base.toString()}/`;
   return new URL(`${folder}${encodeURIComponent(filename)}`);
