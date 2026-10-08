@@ -4,15 +4,20 @@
   "title": "Upload to Copyparty",
   "description": "Upload clipboard files or text to Copyparty",
   "icon": "icon.png",
-  "author": "local",
-  "platforms": ["macOS"],
-  "categories": ["Productivity"],
+  "author": "evening",
+  "platforms": [
+    "macOS"
+  ],
+  "categories": [
+    "Productivity",
+    "Developer Tools"
+  ],
   "license": "MIT",
   "commands": [
     {
       "name": "upload-clipboard",
       "title": "Upload Clipboard to Copyparty",
-      "description": "Inspect the clipboard and upload a copied file",
+      "description": "Upload the copied file or text and copy its share link",
       "mode": "view"
     }
   ],
@@ -30,7 +35,7 @@
       "title": "Username",
       "description": "Copyparty username",
       "type": "textfield",
-      "required": true,
+      "required": true
     },
     {
       "name": "password",
@@ -56,5 +61,12 @@
     "eslint": "^10.5.0",
     "prettier": "^3.8.5",
     "typescript": "^5.9.3"
-  }
+  },
+  "keywords": [
+    "copyparty",
+    "upload",
+    "clipboard",
+    "share",
+    "file"
+  ]
 }
