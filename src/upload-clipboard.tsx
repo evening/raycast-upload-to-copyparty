@@ -30,7 +30,7 @@ type UploadSource =
   | { kind: "file"; path: string; filename: string }
   | { kind: "text" | "html"; content: string; filename: "clipboard.txt" };
 
-type Inspection = { fields: ClipboardFields; source?: UploadSource };
+type Inspection = { source?: UploadSource };
 
 type ViewState =
   { kind: "loading" } | { kind: "error"; message: string } | { kind: "inspection"; inspection: Inspection };
@@ -53,7 +53,7 @@ export default function Command() {
           text: content.text,
           html: content.html,
         };
-        const inspection: Inspection = { fields };
+        const inspection: Inspection = {};
 
         if (fields.file) {
           try {
@@ -152,16 +152,14 @@ export default function Command() {
   if (view.kind === "loading") return <Detail isLoading markdown="Reading clipboard…" />;
   if (view.kind === "error") return <Detail markdown={view.message} />;
 
-  const { fields, source } = view.inspection;
+  const { source } = view.inspection;
   if (source) {
     return <UploadForm source={source} isUploading={isUploading} onUpload={upload} />;
   }
 
-  const debugFields = `    file: ${debugValue(fields.file)}\n    text: ${debugValue(fields.text)}\n    html: ${debugValue(fields.html)}`;
-
   return (
     <Detail
-      markdown={`## Clipboard.read() values\n\n${debugFields}\n\nNo readable local file was found. Copy a file in Finder and run this command again. Screenshot bitmaps are not supported unless Raycast exposes them as a file path.`}
+      markdown={`## Nothing to upload\n\nCopy a file in Finder or some text, then run this command again. Images copied as pixels (for example, screenshots sent straight to the clipboard) are not supported yet.`}
     />
   );
 }
@@ -191,8 +189,4 @@ function UploadForm(props: {
       />
     </Form>
   );
-}
-
-function debugValue(value: string | undefined): string {
-  return value === undefined ? "undefined" : JSON.stringify(value);
 }
