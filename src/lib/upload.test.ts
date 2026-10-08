@@ -17,9 +17,18 @@ test("validateFilename", () => {
 test("buildDestination", () => {
   assert.equal(buildDestination("https://example.com", "file.txt").toString(), "https://example.com/file.txt");
   assert.equal(buildDestination("https://example.com/", "file.txt").toString(), "https://example.com/file.txt");
-  assert.equal(buildDestination("https://example.com/up/", "spaced name.txt").toString(), "https://example.com/up/spaced%20name.txt");
-  assert.equal(buildDestination("https://example.com/up/", "\u2603.txt").toString(), "https://example.com/up/%E2%98%83.txt");
-  assert.equal(buildDestination("https://example.com/up/", "a#b?c.txt").toString(), "https://example.com/up/a%23b%3Fc.txt");
+  assert.equal(
+    buildDestination("https://example.com/up/", "spaced name.txt").toString(),
+    "https://example.com/up/spaced%20name.txt",
+  );
+  assert.equal(
+    buildDestination("https://example.com/up/", "\u2603.txt").toString(),
+    "https://example.com/up/%E2%98%83.txt",
+  );
+  assert.equal(
+    buildDestination("https://example.com/up/", "a#b?c.txt").toString(),
+    "https://example.com/up/a%23b%3Fc.txt",
+  );
 
   assert.throws(() => buildDestination("http://example.com", "file.txt"), /must be https/);
   assert.throws(() => buildDestination("https://example.com?query=1", "file.txt"), /query or hash/);

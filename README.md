@@ -6,7 +6,7 @@ This private Raycast command uploads a file or text copied to the clipboard and 
 
 1. Install Node.js 22.22.2 or newer and run `npm install` in this directory.
 2. In Raycast, use **Import Extension** and select this directory. Raycast may require you to sign in first.
-3. Set the extension preferences: **Upload URL** is the HTTPS Copyparty folder URL (default `https://copyparty.example.com/files/`), **Username** defaults to `yourusername`, and **Password** is a required secure password preference.
+3. Set the extension preferences: **Upload URL** is the Copyparty folder URL (https:// or http://) (default `https://copyparty.example.com/files/`), **Username** defaults to `yourusername`, and **Password** is a required secure password preference.
 4. Run `npm run dev` when developing locally. `npm run build` creates a distribution build without publishing it.
 
 ## Use
