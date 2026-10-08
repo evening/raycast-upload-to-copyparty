@@ -48,7 +48,8 @@
   "scripts": {
     "dev": "ray develop",
     "build": "ray build",
-    "lint": "ray lint"
+    "lint": "ray lint",
+    "test": "node --import tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@raycast/api": "^2.7.1",
@@ -60,6 +61,7 @@
     "@types/react": "^19.2.0",
     "eslint": "^10.5.0",
     "prettier": "^3.8.5",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   },
   "keywords": [

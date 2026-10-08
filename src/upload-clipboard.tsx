@@ -11,6 +11,7 @@ import {
 } from "@raycast/api";
 import { readFile, stat } from "node:fs/promises";
 import { basename } from "node:path";
+import { buildDestination, findFinalHttpUrl, validateFilename } from "./lib/upload";
 import { useEffect, useRef, useState } from "react";
 
 type Preferences = {
@@ -86,11 +87,8 @@ export default function Command() {
     if (uploadInProgress.current) return;
 
     const filename = values.filename;
-    const hasControlCharacter = [...filename].some((character) => {
-      const code = character.charCodeAt(0);
-      return code < 32 || code === 127;
-    });
-    if (!filename.trim() || filename === "." || filename === ".." || /[\\/]/.test(filename) || hasControlCharacter) {
+    const errorMsg = validateFilename(filename);
+    if (errorMsg) {
       await showToast({ style: Toast.Style.Failure, title: "Enter a valid file name" });
       return;
     }
@@ -98,10 +96,7 @@ export default function Command() {
     let destination: URL;
     const preferences = getPreferenceValues<Preferences>();
     try {
-      const base = new URL(preferences.uploadUrl);
-      if (base.protocol !== "https:" || base.search || base.hash) throw new Error("Invalid URL");
-      const folder = base.toString().endsWith("/") ? base.toString() : `${base.toString()}/`;
-      destination = new URL(`${folder}${encodeURIComponent(filename)}`);
+      destination = buildDestination(preferences.uploadUrl, filename);
     } catch {
       await showToast({
         style: Toast.Style.Failure,
@@ -200,20 +195,4 @@ function UploadForm(props: {
 
 function debugValue(value: string | undefined): string {
   return value === undefined ? "undefined" : JSON.stringify(value);
-}
-
-function findFinalHttpUrl(body: string): string | undefined {
-  let finalUrl: string | undefined;
-  for (const line of body.split(/\r?\n/)) {
-    const candidate = line.trim();
-    try {
-      const parsed = new URL(candidate);
-      if ((parsed.protocol === "http:" || parsed.protocol === "https:") && parsed.hostname) {
-        finalUrl = parsed.toString();
-      }
-    } catch {
-      // Other response lines are not share URLs.
-    }
-  }
-  return finalUrl;
 }
