@@ -81,9 +81,7 @@ export default function Command() {
     if (uploadInProgress.current) return;
 
     const filename = values.filename;
-    const errorMsg = validateFilename(filename);
-    if (errorMsg) {
-      await showToast({ style: Toast.Style.Failure, title: "Enter a valid file name" });
+    if (validateFilename(filename)) {
       return;
     }
 
@@ -164,6 +162,8 @@ function UploadForm(props: {
   onUpload: (source: UploadSource, values: { filename: string }) => Promise<void>;
 }) {
   const { source, isUploading, onUpload } = props;
+  const [filenameError, setFilenameError] = useState<string | undefined>();
+
   return (
     <Form
       isLoading={isUploading}
@@ -176,7 +176,18 @@ function UploadForm(props: {
         </ActionPanel>
       }
     >
-      <Form.TextField id="filename" title="Upload as" defaultValue={source.filename} />
+      <Form.TextField
+        id="filename"
+        title="Upload as"
+        defaultValue={source.filename}
+        error={filenameError}
+        onChange={(newValue) => {
+          setFilenameError(validateFilename(newValue));
+        }}
+        onBlur={(event) => {
+          setFilenameError(validateFilename(event.target.value));
+        }}
+      />
       <Form.Description
         title={source.kind === "file" ? "File path" : "Text to upload"}
         text={source.kind === "file" ? source.path : source.content}
