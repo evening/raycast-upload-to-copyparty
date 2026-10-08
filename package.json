@@ -25,7 +25,7 @@
     {
       "name": "uploadUrl",
       "title": "Upload URL",
-      "description": "HTTPS URL of the Copyparty destination folder",
+      "description": "Copyparty folder URL (https:// or http://)",
       "type": "textfield",
       "required": true,
       "placeholder": "https://copyparty.example.com/uploads/"
