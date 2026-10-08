@@ -104,7 +104,8 @@ export default function Command() {
       const toast = await showToast({ style: Toast.Style.Animated, title: "Uploading file" });
       try {
         const bytes = source.kind === "file" ? await readFile(source.path) : Buffer.from(source.content, "utf8");
-        const authorization = Buffer.from(`${preferences.username}:${preferences.password}`, "utf8").toString("base64");
+        const reqUser = preferences.username || "x";
+        const authorization = Buffer.from(`${reqUser}:${preferences.password}`, "utf8").toString("base64");
         const response = await fetch(destination, {
           method: "PUT",
           headers: { Authorization: `Basic ${authorization}`, "Content-Type": "application/octet-stream" },

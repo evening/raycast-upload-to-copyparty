@@ -33,9 +33,9 @@
     {
       "name": "username",
       "title": "Username",
-      "description": "Copyparty username",
+      "description": "Only needed if the server runs with --usernames",
       "type": "textfield",
-      "required": true
+      "required": false
     },
     {
       "name": "password",
