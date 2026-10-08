@@ -101,7 +101,7 @@ export default function Command() {
     uploadInProgress.current = true;
     setIsUploading(true);
     try {
-      const toast = await showToast({ style: Toast.Style.Animated, title: "Uploading file" });
+      const toast = await showToast({ style: Toast.Style.Animated, title: `Uploading ${filename}...` });
       try {
         const bytes = source.kind === "file" ? await readFile(source.path) : Buffer.from(source.content, "utf8");
         const reqUser = preferences.username || "x";
@@ -144,10 +144,27 @@ export default function Command() {
         toast.style = Toast.Style.Success;
         toast.title = "Copyparty link copied";
         await popToRoot({ clearSearchBar: true });
-      } catch {
+      } catch (error) {
         toast.style = Toast.Style.Failure;
         toast.title = "Upload failed";
-        toast.message = "Check the file, network, and Copyparty settings.";
+        toast.message = error instanceof Error ? error.message : "Unknown error";
+
+        let safeUrlStr = destination.toString();
+        try {
+          const urlSafe = new URL(destination);
+          urlSafe.username = "";
+          urlSafe.password = "";
+          urlSafe.search = "";
+          safeUrlStr = urlSafe.toString();
+        } catch {}
+
+        toast.primaryAction = {
+          title: "Copy Error Details",
+          onAction: async () => {
+            await Clipboard.copy(`Error: ${toast.message}\nURL: ${safeUrlStr}`);
+            await showToast({ style: Toast.Style.Success, title: "Copied error details" });
+          },
+        };
       }
     } finally {
       uploadInProgress.current = false;
