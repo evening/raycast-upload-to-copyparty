@@ -13,6 +13,4 @@ This private Raycast command uploads a file or text copied to the clipboard and 
 
 Copy a local file or text, then run **Upload Clipboard to Copyparty**. The upload form shows an editable filename followed by the source file path or the exact text that will be uploaded. If Raycast provides both plain text and HTML, plain text is used. If it provides only HTML, the HTML source is uploaded as `clipboard.txt`. Review or edit the filename, then submit on the same screen. On success, the command copies the HTTP(S) URL returned by Copyparty to the clipboard and returns to Raycast search. The destination filename is URL encoded before the HTTPS PUT request.
 
-The command reads `Clipboard.read()` once on opening. If it finds no readable file or text/HTML content, the diagnostic view shows the actual `file`, `text`, and `html` values Raycast returned. Values use JSON string notation so newlines and other special characters remain visible. This can expose clipboard text, HTML, and full file paths on screen. Credentials are never displayed.
-
-Clipboard screenshot bitmap uploads are currently unsupported. A CleanShot screenshot can be uploaded only if Raycast exposes it as a local file path in `Clipboard.read()`; the diagnostic view shows whether that happened.
+Clipboard screenshot bitmap uploads are currently unsupported. A CleanShot screenshot can be uploaded only if Raycast exposes it as a local file path in `Clipboard.read()`.
