@@ -23,7 +23,7 @@
       "description": "HTTPS URL of the Copyparty destination folder",
       "type": "textfield",
       "required": true,
-      "default": "https://f.chuu.moe/files/"
+      "placeholder": "https://copyparty.example.com/uploads/"
     },
     {
       "name": "username",
@@ -31,7 +31,6 @@
       "description": "Copyparty username",
       "type": "textfield",
       "required": true,
-      "default": "adm"
     },
     {
       "name": "password",
