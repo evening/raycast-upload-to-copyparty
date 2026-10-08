@@ -9,7 +9,9 @@ import {
   popToRoot,
   showToast,
 } from "@raycast/api";
-import { readFile, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { Readable } from "node:stream";
 import { basename } from "node:path";
 import { buildDestination, findFinalHttpUrl, validateFilename } from "./lib/upload";
 import { useEffect, useRef, useState } from "react";
