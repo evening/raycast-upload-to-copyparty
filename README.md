@@ -1,16 +1,48 @@
 # Upload to Copyparty
 
-This private Raycast command uploads a file or text copied to the clipboard and copies Copyparty's returned share URL.
+Upload a copied file or text to Copyparty and copy its share link using Raycast.
 
-## Set up
+## Features
+- Upload local files or plain text directly from your clipboard.
+- Edit the filename before uploading.
+- Automatic link copying to the clipboard on success.
+- Instantly returns you to Raycast search.
 
-1. Install Node.js 22.22.2 or newer and run `npm install` in this directory.
-2. In Raycast, use **Import Extension** and select this directory. Raycast may require you to sign in first.
-3. Set the extension preferences: **Upload URL** is the Copyparty folder URL (https:// or http://) (default `https://copyparty.example.com/files/`), **Username** defaults to `yourusername`, and **Password** is a required secure password preference.
-4. Run `npm run dev` when developing locally. `npm run build` creates a distribution build without publishing it.
+## Install
+1. Clone this repository: `git clone https://github.com/evening/raycast-upload-to-copyparty.git`
+2. Run `npm ci` to install dependencies.
+3. Open Raycast -> Extensions -> **Import Extension** and select the cloned directory.
+4. Run `npm run dev` to start development.
 
-## Use
+## Configure
+In Raycast Settings -> Extensions -> Upload to Copyparty, configure:
+- **Upload URL**: The Copyparty folder URL (e.g. `https://copyparty.example.com/uploads/` or `http://` for local). *Note: over HTTP the password is sent in clear text on the local network.*
+- **Username**: Optional. Only needed if the Copyparty server runs with `--usernames`.
+- **Password**: Required. The authentication password.
 
-Copy a local file or text, then run **Upload Clipboard to Copyparty**. The upload form shows an editable filename followed by the source file path or the exact text that will be uploaded. If Raycast provides both plain text and HTML, plain text is used. If it provides only HTML, the HTML source is uploaded as `clipboard.txt`. Review or edit the filename, then submit on the same screen. On success, the command copies the HTTP(S) URL returned by Copyparty to the clipboard and returns to Raycast search. The destination filename is URL encoded before the HTTPS PUT request.
+## Usage
+1. Copy a file in Finder, or select and copy text.
+2. Open Raycast and run **Upload Clipboard to Copyparty**.
+3. Confirm or rename the destination file.
+4. Hit **Submit** (Cmd+Enter). The Copyparty URL will be copied to your clipboard.
 
-Clipboard screenshot bitmap uploads are currently unsupported. A CleanShot screenshot can be uploaded only if Raycast exposes it as a local file path in `Clipboard.read()`.
+## Limitations
+- Clipboard screenshot bitmap uploads are currently unsupported. A CleanShot screenshot can be uploaded only if Raycast exposes it as a local file path.
+- By default, if the file exists, behavior depends on the Copyparty server configuration.
+
+## Troubleshooting
+- **Upload failed (Copyparty rejected the password...)**: Check your permissions, username, and password.
+- **Upload folder not found**: Verify that the Upload URL exists on the server.
+- **File too large**: The server rejected the file size.
+- **Network errors**: Check your internet connection and verify if the URL uses https:// or http:// correctly.
+
+## Development
+- `npm run build`: Build the extension.
+- `npm run fix`: Lint and format code.
+- `npm test`: Run tests using the native Node runner.
+
+### Contributing
+Run `npm ci && npm run build && npx tsc --noEmit && npx eslint src && npx prettier --check . && npm test`. Please submit one change per PR.
+
+## License
+MIT
