@@ -14,12 +14,6 @@ import { basename } from "node:path";
 import { buildDestination, findFinalHttpUrl, validateFilename } from "./lib/upload";
 import { useEffect, useRef, useState } from "react";
 
-type Preferences = {
-  uploadUrl: string;
-  username: string;
-  password: string;
-};
-
 type ClipboardFields = {
   file?: string;
   text?: string;
@@ -27,8 +21,7 @@ type ClipboardFields = {
 };
 
 type UploadSource =
-  | { kind: "file"; path: string; filename: string }
-  | { kind: "text" | "html"; content: string; filename: "clipboard.txt" };
+  { kind: "file"; path: string; filename: string } | { kind: "text"; content: string; filename: string };
 
 type Inspection = { source?: UploadSource };
 
@@ -70,10 +63,11 @@ export default function Command() {
           }
         }
 
-        if (!inspection.source && fields.text !== undefined) {
-          inspection.source = { kind: "text", content: fields.text, filename: "clipboard.txt" };
-        } else if (!inspection.source && fields.html !== undefined) {
-          inspection.source = { kind: "html", content: fields.html, filename: "clipboard.txt" };
+        if (!inspection.source) {
+          const content = fields.text || fields.html || "";
+          if (content.trim()) {
+            inspection.source = { kind: "text", content: content, filename: "clipboard.txt" };
+          }
         }
 
         setView({ kind: "inspection", inspection });
