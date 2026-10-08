@@ -1,4 +1,14 @@
-import { Action, ActionPanel, Clipboard, Detail, Form, Toast, getPreferenceValues, popToRoot, showToast } from "@raycast/api";
+import {
+  Action,
+  ActionPanel,
+  Clipboard,
+  Detail,
+  Form,
+  Toast,
+  getPreferenceValues,
+  popToRoot,
+  showToast,
+} from "@raycast/api";
 import { readFile, stat } from "node:fs/promises";
 import { basename } from "node:path";
 import { useEffect, useRef, useState } from "react";
@@ -15,16 +25,14 @@ type ClipboardFields = {
   html?: string;
 };
 
-type Inspection = {
-  fields: ClipboardFields;
-  fileName?: string;
-  uploadableFile?: string;
-};
+type UploadSource =
+  | { kind: "file"; path: string; filename: string }
+  | { kind: "text" | "html"; content: string; filename: "clipboard.txt" };
+
+type Inspection = { fields: ClipboardFields; source?: UploadSource };
 
 type ViewState =
-  | { kind: "loading" }
-  | { kind: "error"; message: string }
-  | { kind: "inspection"; inspection: Inspection };
+  { kind: "loading" } | { kind: "error"; message: string } | { kind: "inspection"; inspection: Inspection };
 
 export default function Command() {
   const didReadClipboard = useRef(false);
@@ -47,15 +55,24 @@ export default function Command() {
         const inspection: Inspection = { fields };
 
         if (fields.file) {
-          inspection.fileName = basename(fields.file);
           try {
             const info = await stat(fields.file);
             if (info.isFile()) {
-              inspection.uploadableFile = fields.file;
+              inspection.source = {
+                kind: "file",
+                path: fields.file,
+                filename: basename(fields.file),
+              };
             }
           } catch {
             // The clipboard can keep a path after its source file disappears.
           }
+        }
+
+        if (!inspection.source && fields.text !== undefined) {
+          inspection.source = { kind: "text", content: fields.text, filename: "clipboard.txt" };
+        } else if (!inspection.source && fields.html !== undefined) {
+          inspection.source = { kind: "html", content: fields.html, filename: "clipboard.txt" };
         }
 
         setView({ kind: "inspection", inspection });
@@ -65,11 +82,15 @@ export default function Command() {
     })();
   }, []);
 
-  async function upload(filePath: string, values: { filename: string }) {
+  async function upload(source: UploadSource, values: { filename: string }) {
     if (uploadInProgress.current) return;
 
     const filename = values.filename;
-    if (!filename.trim() || filename === "." || filename === ".." || /[\\/\x00-\x1f\x7f]/.test(filename)) {
+    const hasControlCharacter = [...filename].some((character) => {
+      const code = character.charCodeAt(0);
+      return code < 32 || code === 127;
+    });
+    if (!filename.trim() || filename === "." || filename === ".." || /[\\/]/.test(filename) || hasControlCharacter) {
       await showToast({ style: Toast.Style.Failure, title: "Enter a valid file name" });
       return;
     }
@@ -82,7 +103,11 @@ export default function Command() {
       const folder = base.toString().endsWith("/") ? base.toString() : `${base.toString()}/`;
       destination = new URL(`${folder}${encodeURIComponent(filename)}`);
     } catch {
-      await showToast({ style: Toast.Style.Failure, title: "Invalid upload URL", message: "Set an HTTPS folder URL in extension preferences." });
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Invalid upload URL",
+        message: "Set an HTTPS folder URL in extension preferences.",
+      });
       return;
     }
 
@@ -91,7 +116,7 @@ export default function Command() {
     try {
       const toast = await showToast({ style: Toast.Style.Animated, title: "Uploading file" });
       try {
-        const bytes = await readFile(filePath);
+        const bytes = source.kind === "file" ? await readFile(source.path) : Buffer.from(source.content, "utf8");
         const authorization = Buffer.from(`${preferences.username}:${preferences.password}`, "utf8").toString("base64");
         const response = await fetch(destination, {
           method: "PUT",
@@ -132,20 +157,9 @@ export default function Command() {
   if (view.kind === "loading") return <Detail isLoading markdown="Reading clipboard…" />;
   if (view.kind === "error") return <Detail markdown={view.message} />;
 
-  const { fields, fileName, uploadableFile } = view.inspection;
-  if (uploadableFile && fileName) {
-    return (
-      <Form
-        isLoading={isUploading}
-        actions={
-          <ActionPanel>
-            <Action.SubmitForm title="Upload to Copyparty" onSubmit={(values: { filename: string }) => upload(uploadableFile, values)} />
-          </ActionPanel>
-        }
-      >
-        <Form.TextField id="filename" title="Upload as" defaultValue={fileName} />
-      </Form>
-    );
+  const { fields, source } = view.inspection;
+  if (source) {
+    return <UploadForm source={source} isUploading={isUploading} onUpload={upload} />;
   }
 
   const debugFields = `    file: ${debugValue(fields.file)}\n    text: ${debugValue(fields.text)}\n    html: ${debugValue(fields.html)}`;
@@ -154,6 +168,33 @@ export default function Command() {
     <Detail
       markdown={`## Clipboard.read() values\n\n${debugFields}\n\nNo readable local file was found. Copy a file in Finder and run this command again. Screenshot bitmaps are not supported unless Raycast exposes them as a file path.`}
     />
+  );
+}
+
+function UploadForm(props: {
+  source: UploadSource;
+  isUploading: boolean;
+  onUpload: (source: UploadSource, values: { filename: string }) => Promise<void>;
+}) {
+  const { source, isUploading, onUpload } = props;
+  return (
+    <Form
+      isLoading={isUploading}
+      actions={
+        <ActionPanel>
+          <Action.SubmitForm
+            title="Upload to Copyparty"
+            onSubmit={(values: { filename: string }) => onUpload(source, values)}
+          />
+        </ActionPanel>
+      }
+    >
+      <Form.TextField id="filename" title="Upload as" defaultValue={source.filename} />
+      <Form.Description
+        title={source.kind === "file" ? "File path" : "Text to upload"}
+        text={source.kind === "file" ? source.path : source.content}
+      />
+    </Form>
   );
 }
 

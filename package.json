@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "upload-to-copyparty",
   "title": "Upload to Copyparty",
-  "description": "Upload a file copied to the clipboard and copy its Copyparty link",
+  "description": "Upload clipboard files or text to Copyparty",
   "icon": "icon.png",
   "author": "local",
   "platforms": ["macOS"],

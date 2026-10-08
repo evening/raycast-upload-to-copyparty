@@ -1,6 +1,6 @@
 # Upload to Copyparty
 
-This private Raycast command uploads one file copied to the clipboard and copies Copyparty's returned share URL.
+This private Raycast command uploads a file or text copied to the clipboard and copies Copyparty's returned share URL.
 
 ## Set up
 
@@ -11,8 +11,8 @@ This private Raycast command uploads one file copied to the clipboard and copies
 
 ## Use
 
-Copy a single local file in Finder, then run **Upload Clipboard to Copyparty**. Review or edit the prefilled filename and submit. On success, the command copies the HTTP(S) URL returned by Copyparty to the clipboard. The destination filename is URL encoded before the HTTPS PUT request.
+Copy a local file or text, then run **Upload Clipboard to Copyparty**. The upload form shows an editable filename followed by the source file path or the exact text that will be uploaded. If Raycast provides both plain text and HTML, plain text is used. If it provides only HTML, the HTML source is uploaded as `clipboard.txt`. Review or edit the filename, then submit on the same screen. On success, the command copies the HTTP(S) URL returned by Copyparty to the clipboard and returns to Raycast search. The destination filename is URL encoded before the HTTPS PUT request.
 
-The command reads `Clipboard.read()` once on opening. It supports a `file` value that points to a readable local file. During debugging, both the upload form and the diagnostic view show the actual `file`, `text`, and `html` values Raycast returned. Values use JSON string notation so newlines and other special characters remain visible. This can expose clipboard text, HTML, and full file paths on screen; close the command when you are done inspecting them. Credentials are never displayed.
+The command reads `Clipboard.read()` once on opening. If it finds no readable file or text/HTML content, the diagnostic view shows the actual `file`, `text`, and `html` values Raycast returned. Values use JSON string notation so newlines and other special characters remain visible. This can expose clipboard text, HTML, and full file paths on screen. Credentials are never displayed.
 
 Clipboard screenshot bitmap uploads are currently unsupported. A CleanShot screenshot can be uploaded only if Raycast exposes it as a local file path in `Clipboard.read()`; the diagnostic view shows whether that happened.
